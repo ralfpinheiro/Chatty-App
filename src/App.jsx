@@ -37,8 +37,9 @@ class App extends Component {
       username: this.state.currentUser,
       content: content
     };
-    const messages = this.state.messages.concat(newMessage);
-    this.setState({ messages: messages });
+    // const messages = this.state.messages.concat(newMessage);
+    // this.setState({ messages: messages });
+    this.socket.send(JSON.stringify(newMessage));
   }
 
   onNewUser(user) {
