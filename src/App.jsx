@@ -2,20 +2,21 @@ import React, { Component } from 'react';
 import ChatBar from './ChatBar.jsx';
 import MessageContainer from './MessageContainer.jsx';
 import Nav from './Nav.jsx';
+const uuidv1 = require('uuid/v1');
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      messages: [
-        { username: 'John', content: 'Hey dude!', id: 23 },
-        { username: 'Mary', content: 'How are you John?', id: 3 }
-      ],
-      currentUser: 'Anonymous'
+      currentUser: 'Anonymous',
+      messages: []
     };
     this.onNewMessage = this.onNewMessage.bind(this);
     this.onNewUser = this.onNewUser.bind(this);
+    this.incomingMessage = this.incomingMessage.bind(this);
+
     this.socket = new WebSocket('ws://localhost:3001/');
+    this.socket.addEventListener('message', this.incomingMessage);
   }
 
   componentDidMount() {
@@ -27,19 +28,22 @@ class App extends Component {
       // Calling setState will trigger a call to render() in App and all child components.
       this.setState({ messages: messages });
     }, 3000);
-    this.socket.onopen = event => {
-      console.log('Connected ccc to the server');
-    };
   }
 
   onNewMessage(content) {
     const newMessage = {
+      id: uuidv1(),
       username: this.state.currentUser,
       content: content
     };
-    // const messages = this.state.messages.concat(newMessage);
-    // this.setState({ messages: messages });
     this.socket.send(JSON.stringify(newMessage));
+  }
+
+  incomingMessage(incMessage) {
+    let message = JSON.parse(incMessage.data);
+    const messages = this.state.messages.concat(message);
+
+    this.setState({ messages: messages });
   }
 
   onNewUser(user) {
