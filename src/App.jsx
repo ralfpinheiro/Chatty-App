@@ -15,6 +15,7 @@ class App extends Component {
     };
     this.onNewMessage = this.onNewMessage.bind(this);
     this.onNewUser = this.onNewUser.bind(this);
+    this.socket = new WebSocket('ws://localhost:3001/');
   }
 
   componentDidMount() {
@@ -26,6 +27,9 @@ class App extends Component {
       // Calling setState will trigger a call to render() in App and all child components.
       this.setState({ messages: messages });
     }, 3000);
+    this.socket.onopen = event => {
+      console.log('Connected ccc to the server');
+    };
   }
 
   onNewMessage(content) {
