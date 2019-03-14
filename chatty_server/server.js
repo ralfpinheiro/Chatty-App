@@ -1,5 +1,6 @@
 const express = require('express');
 const WebSocket = require('ws');
+const uuidv1 = require('uuid/v1');
 
 // Set the port to 3001
 const PORT = 3001;
@@ -21,7 +22,18 @@ wss.on('connection', ws => {
 
   ws.on('message', message => {
     let currentMsg = JSON.parse(message);
-    console.log(`User ${currentMsg.username} said ${currentMsg.content}`);
+    currentMsg.id = uuidv1();
+    switch (currentMsg.type) {
+      case 'postNotification':
+        currentMsg.type = 'incomingNotification';
+        break;
+      case 'postMessage':
+        currentMsg.type = 'incomingMessage';
+        break;
+      default:
+        // show an error in the console if the message type is unknown
+        throw new Error('Unknown event type ' + data.type);
+    }
 
     wss.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {

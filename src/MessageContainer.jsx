@@ -8,7 +8,7 @@ class MessageContainer extends Component {
 
   render() {
     const posts = this.props.messages.map(post => {
-      return <MessageList key={post.id} user={post.username} content={post.content} />;
+      return <MessageList key={post.id} type={post.type} user={post.username} content={post.content} />;
     });
 
     return (

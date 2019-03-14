@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import ChatBar from './ChatBar.jsx';
 import MessageContainer from './MessageContainer.jsx';
 import Nav from './Nav.jsx';
-const uuidv1 = require('uuid/v1');
 
 class App extends Component {
   constructor(props) {
@@ -23,7 +22,7 @@ class App extends Component {
     setTimeout(() => {
       // Add a new message to the list of messages in the data store
       const newMessage = { id: 37, username: 'Michelle', content: 'Hello there!' };
-      const messages = this.state.messages.concat(newMessage);
+      let messages = this.state.messages.concat(newMessage);
       // Update the state of the app component.
       // Calling setState will trigger a call to render() in App and all child components.
       this.setState({ messages: messages });
@@ -32,22 +31,39 @@ class App extends Component {
 
   onNewMessage(content) {
     const newMessage = {
-      id: uuidv1(),
+      type: 'postMessage',
       username: this.state.currentUser,
       content: content
     };
     this.socket.send(JSON.stringify(newMessage));
+    console.log('Client Sends', newMessage);
   }
 
   incomingMessage(incMessage) {
     let message = JSON.parse(incMessage.data);
     const messages = this.state.messages.concat(message);
 
-    this.setState({ messages: messages });
+    this.setState({
+      messages: messages
+    });
+    console.log('Server Sends', message);
   }
 
-  onNewUser(user) {
-    this.setState({ currentUser: user });
+  onNewUser(event) {
+    const type = 'postNotification';
+    const previousUser = this.state.currentUser;
+    let newUser = event;
+    const content = `${previousUser} has changed their name to ${newUser}.`;
+    const newNotification = {
+      content,
+      type
+    };
+
+    this.setState({
+      currentUser: newUser
+    });
+    this.socket.send(JSON.stringify(newNotification));
+    console.log('client sends', newNotification);
   }
 
   render() {
