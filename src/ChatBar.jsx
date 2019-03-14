@@ -10,7 +10,7 @@ class ChatBar extends Component {
     this.onCompose = this.onCompose.bind(this);
     this.onContent = this.onContent.bind(this);
     this.keyPress = this.keyPress.bind(this);
-    this.onUserKeyPress = this.onUserKeyPress.bind(this);
+    this.onBlur = this.onBlur.bind(this);
     this.onUserChange = this.onUserChange.bind(this);
   }
 
@@ -35,13 +35,8 @@ class ChatBar extends Component {
     });
   }
 
-  onUserKeyPress(event) {
-    if (event.keyCode == 13) {
-      this.props.onNewUser(this.state.user);
-      this.setState({
-        user: ''
-      });
-    }
+  onBlur(event) {
+    this.props.onNewUser(this.state.user);
   }
 
   onContent(event) {
@@ -56,7 +51,7 @@ class ChatBar extends Component {
         <footer className='chatbar'>
           <input
             onChange={this.onUserChange}
-            onKeyDown={this.onUserKeyPress}
+            onBlur={this.onBlur}
             value={this.state.user}
             className='chatbar-username'
             placeholder='Your Name (Optional)'
