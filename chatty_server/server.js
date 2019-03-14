@@ -14,34 +14,61 @@ const server = express()
 // Create the WebSockets server
 const wss = new WebSocket.Server({ server });
 
-// Set up a callback that will run when a client connects to the server
-// When a client connects they are assigned a socket, represented by
-// the ws parameter in the callback.
+//Handles and broadcast mmessages to all connected clients
+wss.handleMessages = msg => {
+  let currentMsg = JSON.parse(msg);
+  currentMsg.id = uuidv1();
+  wss.handleNotifications(currentMsg);
+  wss.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(currentMsg));
+    }
+  });
+};
+
+wss.sendConnectedUsers = client => {
+  let connectedUsers = wss.clients.size;
+  let userData = {
+    type: 'User Count',
+    users: 0
+  };
+
+  wss.clients.forEach(client => {
+    if (connectedUsers >= 1) {
+      userData.users = connectedUsers;
+      client.send(JSON.stringify(userData));
+    }
+  });
+};
+
+// Handles Notifications type client/server
+wss.handleNotifications = notification => {
+  switch (notification.type) {
+    case 'postNotification':
+      notification.type = 'incomingNotification';
+      break;
+    case 'postMessage':
+      notification.type = 'incomingMessage';
+      break;
+    default:
+      // show an error in the console if the message type is unknown
+      throw new Error('Unknown event type ' + notification.type);
+  }
+};
+
 wss.on('connection', ws => {
   console.log('Client connected');
 
-  ws.on('message', message => {
-    let currentMsg = JSON.parse(message);
-    currentMsg.id = uuidv1();
-    switch (currentMsg.type) {
-      case 'postNotification':
-        currentMsg.type = 'incomingNotification';
-        break;
-      case 'postMessage':
-        currentMsg.type = 'incomingMessage';
-        break;
-      default:
-        // show an error in the console if the message type is unknown
-        throw new Error('Unknown event type ' + data.type);
-    }
+  wss.sendConnectedUsers();
 
-    wss.clients.forEach(client => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(currentMsg));
-      }
-    });
+  ws.on('message', message => {
+    wss.handleMessages(message);
   });
 
-  // Set up a callback for when a client closes the socket. This usually means they closed their browser.
-  ws.on('close', () => console.log('Client disconnected'));
+  // Set up a callback for when a client closes the socket.
+  //  This usually means they closed their browser.
+  ws.on('close', () => {
+    wss.sendConnectedUsers();
+    console.log('Client disconected');
+  });
 });
