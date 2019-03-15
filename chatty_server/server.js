@@ -25,19 +25,13 @@ wss.handleMessages = msg => {
     }
   });
 };
-
+//Send all conected users count to client-server
 wss.sendConnectedUsers = client => {
   let connectedUsers = wss.clients.size;
-  let userData = {
-    type: 'User Count',
-    users: 0
-  };
-
+  let userData = { type: 'userCount', users: 0 };
   wss.clients.forEach(client => {
-    if (connectedUsers >= 1) {
-      userData.users = connectedUsers;
-      client.send(JSON.stringify(userData));
-    }
+    userData.users = connectedUsers;
+    client.send(JSON.stringify(userData));
   });
 };
 
@@ -58,16 +52,14 @@ wss.handleNotifications = notification => {
 
 wss.on('connection', ws => {
   console.log('Client connected');
-
   wss.sendConnectedUsers();
-
   ws.on('message', message => {
     wss.handleMessages(message);
   });
 
   // Set up a callback for when a client closes the socket.
-  //  This usually means they closed their browser.
   ws.on('close', () => {
+    //Updates users count when a user disconects
     wss.sendConnectedUsers();
     console.log('Client disconected');
   });

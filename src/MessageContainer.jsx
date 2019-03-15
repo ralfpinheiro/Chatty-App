@@ -13,6 +13,7 @@ class MessageContainer extends Component {
 
     return (
       <div>
+        <div className='chat-date'>Today</div>
         <main className='messages'>{posts}</main>
       </div>
     );

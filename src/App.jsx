@@ -8,27 +8,20 @@ class App extends Component {
     super(props);
     this.state = {
       currentUser: 'Anonymous',
-      messages: []
+      messages: [],
+      onlineUsers: 0,
+      sufix: 'user online'
     };
+    this.socket = new WebSocket('ws://localhost:3001/');
     this.onNewMessage = this.onNewMessage.bind(this);
     this.onNewUser = this.onNewUser.bind(this);
     this.incomingMessage = this.incomingMessage.bind(this);
-
-    this.socket = new WebSocket('ws://localhost:3001/');
-    this.socket.addEventListener('message', this.incomingMessage);
   }
 
   componentDidMount() {
-    setTimeout(() => {
-      // Add a new message to the list of messages in the data store
-      const newMessage = { id: 37, username: 'Michelle', content: 'Hello there!' };
-      let messages = this.state.messages.concat(newMessage);
-      // Update the state of the app component.
-      // Calling setState will trigger a call to render() in App and all child components.
-      this.setState({ messages: messages });
-    }, 3000);
+    this.socket.addEventListener('message', this.incomingMessage);
   }
-
+  // Sends new message to the server
   onNewMessage(content) {
     const newMessage = {
       type: 'postMessage',
@@ -36,17 +29,28 @@ class App extends Component {
       content: content
     };
     this.socket.send(JSON.stringify(newMessage));
-    console.log('Client Sends', newMessage);
   }
 
+  // Set the  number os connected users
+  getUsers(user) {
+    this.setState({
+      onlineUsers: user.users
+    });
+    if (user.users > 1) {
+      this.setState({
+        sufix: 'users online'
+      });
+    }
+  }
+  // Receives information server
   incomingMessage(incMessage) {
     let message = JSON.parse(incMessage.data);
-    const messages = this.state.messages.concat(message);
+    let messages = this.state.messages.concat(message);
 
-    this.setState({
-      messages: messages
-    });
-    console.log('Server Sends', message);
+    if (message.type === 'userCount') {
+      return this.getUsers(message);
+    }
+    this.setState({ messages: messages });
   }
 
   onNewUser(event) {
@@ -54,26 +58,21 @@ class App extends Component {
     const previousUser = this.state.currentUser;
     let newUser = event;
     const content = `${previousUser} has changed their name to ${newUser}.`;
-    const newNotification = {
-      content,
-      type
-    };
+    const newNotification = { content, type };
 
-    this.setState({
-      currentUser: newUser
-    });
+    this.setState({ currentUser: newUser });
     this.socket.send(JSON.stringify(newNotification));
-    console.log('client sends', newNotification);
   }
 
   render() {
     return (
       <div>
-        <Nav />
+        <Nav getUser={this.state.onlineUsers} sufix={this.state.sufix} />
         <MessageContainer messages={this.state.messages} />
         <ChatBar onNewUser={this.onNewUser} onNewMessage={(this.state.user, this.onNewMessage)} />
       </div>
     );
   }
 }
+
 export default App;
