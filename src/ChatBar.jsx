@@ -15,8 +15,8 @@ class ChatBar extends Component {
   }
 
   // Set the message type messages going to the server
-  onCompose(event) {
-    this.setState((prev, props) => ({
+  onCompose() {
+    this.setState(() => ({
       type: 'postMessage',
       content: ''
     }));

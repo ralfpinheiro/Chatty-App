@@ -40,12 +40,16 @@ class App extends Component {
       this.setState({
         sufix: 'users online'
       });
+    } else {
+      this.setState({
+        sufix: 'user online'
+      });
     }
   }
   // Receives information server
   incomingMessage(incMessage) {
-    let message = JSON.parse(incMessage.data);
-    let messages = this.state.messages.concat(message);
+    const message = JSON.parse(incMessage.data);
+    const messages = this.state.messages.concat(message);
 
     if (message.type === 'userCount') {
       return this.getUsers(message);
@@ -56,7 +60,7 @@ class App extends Component {
   onNewUser(event) {
     const type = 'postNotification';
     const previousUser = this.state.currentUser;
-    let newUser = event;
+    const newUser = event;
     const content = `${previousUser} has changed their name to ${newUser}.`;
     const newNotification = { content, type };
 

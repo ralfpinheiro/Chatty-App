@@ -16,7 +16,7 @@ const wss = new WebSocket.Server({ server });
 
 //Handles and broadcast mmessages to all connected clients
 wss.handleMessages = msg => {
-  let currentMsg = JSON.parse(msg);
+  const currentMsg = JSON.parse(msg);
   currentMsg.id = uuidv1();
   wss.handleNotifications(currentMsg);
   wss.clients.forEach(client => {
@@ -26,9 +26,9 @@ wss.handleMessages = msg => {
   });
 };
 //Send all conected users count to client-server
-wss.sendConnectedUsers = client => {
-  let connectedUsers = wss.clients.size;
-  let userData = { type: 'userCount', users: 0 };
+wss.sendConnectedUsers = () => {
+  const connectedUsers = wss.clients.size;
+  const userData = { type: 'userCount', users: 0 };
   wss.clients.forEach(client => {
     userData.users = connectedUsers;
     client.send(JSON.stringify(userData));

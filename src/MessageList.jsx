@@ -6,10 +6,8 @@ class MessageList extends Component {
     switch (this.props.type) {
       case 'incomingNotification':
         return <span className='message-system'>{this.props.content}</span>;
-        break;
       default:
         return <span className='message-content'>{this.props.content}</span>;
-        break;
     }
   };
 
